@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Move Together – ANIF Eurowellness · RiminiWellness 2025</title>
+    <meta name="description" content="Progetto intergenerazionale ANIF Eurowellness per RiminiWellness 2025. Giovani (16-20) e Over 60 insieme.">
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['selector', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    fontFamily: { display: ['Poppins','sans-serif'] },
+                    colors: {
+                        coral: { 50:'#fff4ef',100:'#ffe4d6',200:'#ffc4a3',300:'#ff9d6b',400:'#ff7d42',500:'#FF6B35',600:'#e84e17',700:'#c23a0e' },
+                        ocean: { 50:'#edf7f3',100:'#d0ede3',200:'#a0dac6',300:'#63bfa3',400:'#37a082',500:'#1F6B52',600:'#185a45',700:'#114030' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- QRCode -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ████████████████████████████████████████████████
+     NAVBAR
+     ████████████████████████████████████████████████ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 py-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
+
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2.5 text-gray-900 no-underline" style="color:var(--text)">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-lg" style="background:#FF6B35">M</div>
+            <span class="font-display font-black text-xl hidden sm:block">Move Together</span>
+        </a>
+
+        <!-- Desktop nav -->
+        <div class="hidden lg:flex items-center gap-7">
+            <a href="#progetto"     onclick="closeMobileMenu()" class="nav-link font-medium" style="color:var(--text-muted)">Il Progetto</a>
+            <a href="#eventi"       onclick="closeMobileMenu()" class="nav-link font-medium" style="color:var(--text-muted)">Eventi</a>
+            <a href="#mappa"        onclick="closeMobileMenu()" class="nav-link font-medium" style="color:var(--text-muted)">Sedi</a>
+            <a href="#gamification" onclick="closeMobileMenu()" class="nav-link font-medium" style="color:var(--text-muted)">Sfide</a>
+        </div>
+
+        <!-- Right controls -->
+        <div class="flex items-center gap-3">
+            <!-- Dark mode toggle -->
+            <button id="dark-toggle" onclick="toggleDark()" title="Modalità scura/chiara" aria-label="Toggle dark mode"></button>
+
+            <button onclick="openModal()" class="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-bold text-sm shadow-coral-btn transition-all hover:scale-105" style="background:#FF6B35">
+                <i class="fas fa-ticket-alt"></i>Prenota
+            </button>
+
+            <!-- Mobile hamburger -->
+            <button id="mobile-menu-btn" class="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center border" style="background:var(--surface);border-color:var(--border);color:var(--text)">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden lg:hidden px-4 pt-3 pb-4 mt-2 mx-4 rounded-2xl border" style="background:var(--bg);border-color:var(--border)">
+        <div class="flex flex-col gap-3">
+            <a href="#progetto"     onclick="closeMobileMenu()" class="py-2 font-medium" style="color:var(--text-muted)">Il Progetto</a>
+            <a href="#eventi"       onclick="closeMobileMenu()" class="py-2 font-medium" style="color:var(--text-muted)">Eventi</a>
+            <a href="#mappa"        onclick="closeMobileMenu()" class="py-2 font-medium" style="color:var(--text-muted)">Sedi</a>
+            <a href="#gamification" onclick="closeMobileMenu()" class="py-2 font-medium" style="color:var(--text-muted)">Sfide</a>
+            <button onclick="openModal();closeMobileMenu()" class="mt-1 py-3 rounded-xl text-white font-bold" style="background:#FF6B35">
+                <i class="fas fa-ticket-alt mr-2"></i>Prenota Ora
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- ████████████████████████████████████████████████
+     WELCOME BACK BANNER
+     ████████████████████████████████████████████████ -->
+<div id="welcome-banner" class="max-w-5xl mx-auto mt-24 mb-0 px-4 sm:px-6">
+    <div class="text-2xl">👋</div>
+    <div>
+        <p class="font-bold" style="color:var(--text)">Bentornato/a, <span id="wb-name"></span>!</p>
+        <p class="text-sm" style="color:var(--text-muted)">
+            <span id="wb-level" class="level-badge mr-2"></span>
+            <span id="wb-xp" style="color:var(--text-muted)"></span>
+        </p>
+    </div>
+    <button onclick="openMyBookings()" class="ml-auto text-sm font-bold px-4 py-2 rounded-full border" style="color:#FF6B35;border-color:#FF6B35;background:transparent;cursor:pointer;white-space:nowrap;">
+        I miei coupon →
+    </button>
+</div>
+
+<!-- ████████████████████████████████████████████████
+     HERO
+     ████████████████████████████████████████████████ -->
+<section class="hero-section min-h-screen flex items-center pt-20 pb-16">
+    <div class="hero-blob-1"></div>
+    <div class="hero-blob-2"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+            <!-- Text -->
+            <div>
+                <!-- Chip -->
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border mb-6 text-sm font-bold" style="background:rgba(255,107,53,.08);border-color:rgba(255,107,53,.2);color:#FF6B35;">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    RiminiWellness 2025 · Attivo
+                </div>
+
+                <h1 class="font-display font-black text-5xl sm:text-6xl leading-tight mb-4" style="color:var(--text)">
+                    Muoviamoci<br>
+                    <span style="color:#FF6B35">Insieme</span>
+                </h1>
+                <p class="text-xl font-semibold mb-3" style="color:var(--text-muted)">
+                    Per <span id="typing-target" style="color:#1F6B52"></span><span class="typing-cursor"></span>
+                </p>
+                <p class="text-lg leading-relaxed mb-8" style="color:var(--text-muted)">
+                    Il progetto <strong style="color:var(--text)">ANIF Eurowellness</strong> che unisce generazioni attraverso
+                    lo sport. Giovani dai 16 ai 20 anni e Over 60, fianco a fianco.
+                </p>
+
+                <!-- CTA buttons -->
+                <div class="flex flex-wrap gap-3 mb-10">
+                    <button onclick="openModal('giovani','Summer Buddy Challenge')" class="flex items-center gap-2 px-7 py-4 rounded-2xl text-white font-bold shadow-coral-btn transition-all hover:scale-105 hover:opacity-95" style="background:#FF6B35">
+                        <i class="fas fa-running"></i>Giovani (16-20)
+                    </button>
+                    <button onclick="openModal('senior','Workshop Longevità & Energia')" class="flex items-center gap-2 px-7 py-4 rounded-2xl text-white font-bold shadow-ocean-btn transition-all hover:scale-105 hover:opacity-95" style="background:#1F6B52">
+                        <i class="fas fa-heart"></i>Over 60
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex flex-wrap gap-6">
+                    <div>
+                        <div id="live-counter" class="font-display font-black text-3xl" style="color:var(--text)">127</div>
+                        <p class="text-sm mt-0.5" style="color:var(--text-muted)">Iscritti oggi 🟢</p>
+                    </div>
+                    <div class="w-px" style="background:var(--border)"></div>
+                    <div>
+                        <div class="font-display font-black text-3xl" style="color:var(--text)">12</div>
+                        <p class="text-sm mt-0.5" style="color:var(--text-muted)">Città coinvolte</p>
+                    </div>
+                    <div class="w-px" style="background:var(--border)"></div>
+                    <div>
+                        <div class="font-display font-black text-3xl" style="color:var(--text)">6</div>
+                        <p class="text-sm mt-0.5" style="color:var(--text-muted)">Pacchetti attivi</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero card (desktop only) -->
+            <div class="hero-card-wrap">
+                <div class="hero-card-main rounded-3xl p-6 shadow-2xl" style="background:var(--bg)">
+
+                    <!-- Countdown -->
+                    <div class="mb-5">
+                        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:var(--text-muted)">Conto alla rovescia · RiminiWellness</p>
+                        <div id="countdown-wrap" class="flex gap-3 justify-center">
+                            <div class="countdown-box"><span id="cd-days" class="countdown-num">--</span><span class="countdown-label">Giorni</span></div>
+                            <div class="countdown-box"><span id="cd-hours" class="countdown-num">--</span><span class="countdown-label">Ore</span></div>
+                            <div class="countdown-box"><span id="cd-mins" class="countdown-num">--</span><span class="countdown-label">Min</span></div>
+                            <div class="countdown-box"><span id="cd-secs" class="countdown-num">--</span><span class="countdown-label">Sec</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Partecipanti -->
+                    <div class="rounded-2xl p-4 mb-4" style="background:var(--surface)">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold" style="color:var(--text)">Partecipanti registrati</span>
+                            <span class="text-xs font-bold" style="color:#FF6B35">500 posti</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full mb-1" style="background:var(--border)">
+                            <div class="h-2 rounded-full" style="width:28%;background:linear-gradient(90deg,#FF6B35,#FFAD59);transition:width 1.5s ease;"></div>
+                        </div>
+                        <p class="text-xs" style="color:var(--text-muted)">Ancora posti disponibili — iscriviti ora!</p>
+                    </div>
+
+                    <!-- Promo card -->
+                    <div class="floating-badge absolute -top-4 -right-4 rounded-2xl px-4 py-3 shadow-lg text-white text-center" style="background:linear-gradient(135deg,#1F6B52,#2a8a6a)">
+                        <div class="text-2xl mb-1">🎁</div>
+                        <div class="font-bold text-xs">Coupon Gratis</div>
+                        <div class="text-xs opacity-80">Generato in 1 click</div>
+                    </div>
+
+                    <!-- XP mini -->
+                    <div class="floating-stat absolute -bottom-4 -left-4 rounded-2xl px-4 py-3 shadow-lg text-white" style="background:linear-gradient(135deg,#FF6B35,#FFAD59)">
+                        <div class="font-display font-black text-xl">+500 XP</div>
+                        <div class="text-xs opacity-80">Sfida 30 Giorni</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ████████████████████████████████████████████████
+     VALORI
+     ████████████████████████████████████████████████ -->
+<section id="progetto" class="py-24" style="background:var(--silk)">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-16 reveal">
+            <span class="chip mb-4" style="background:rgba(255,107,53,.1);color:#FF6B35;">Il Progetto</span>
+            <h2 class="font-display font-black text-4xl sm:text-5xl mb-4" style="color:var(--text)">Perché Move Together?</h2>
+            <p class="text-xl max-w-2xl mx-auto" style="color:var(--text-muted)">
+                Un approccio innovativo che abbatte le barriere generazionali nello sport e nel benessere.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="value-card rounded-3xl p-8 text-center reveal" style="background:var(--bg)">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-content:center mx-auto mb-5 text-3xl flex items-center justify-center" style="background:rgba(255,107,53,.1)">🤝</div>
+                <h3 class="font-display font-black text-xl mb-3" style="color:var(--text)">Connessione Reale</h3>
+                <p style="color:var(--text-muted)">Creiamo legami autentici tra generazioni diverse attraverso l'attività fisica condivisa.</p>
+            </div>
+            <div class="value-card rounded-3xl p-8 text-center reveal" style="background:var(--bg)">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-content:center mx-auto mb-5 text-3xl flex items-center justify-center" style="background:rgba(31,107,82,.1)">💪</div>
+                <h3 class="font-display font-black text-xl mb-3" style="color:var(--text)">Benefici Reciproci</h3>
+                <p style="color:var(--text-muted)">I giovani guadagnano esperienza, i senior restano attivi. Tutti vincono insieme.</p>
+            </div>
+            <div class="value-card rounded-3xl p-8 text-center reveal" style="background:var(--bg)">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-content:center mx-auto mb-5 text-3xl flex items-center justify-center" style="background:rgba(255,107,53,.1)">🏆</div>
+                <h3 class="font-display font-black text-xl mb-3" style="color:var(--text)">Gamification</h3>
+                <p style="color:var(--text-muted)">Sfide, badge, XP e coupon esclusivi per rendere il benessere un'avventura divertente.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ████████████████████████████████████████████████
+     EVENTI
+     ████████████████████████████████████████████████ -->
+<section id="eventi" class="py-24" style="background:var(--bg)">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-12 reveal">
+            <span class="chip mb-4" style="background:rgba(31,107,82,.1);color:#1F6B52;">Pacchetti Attivi</span>
+            <h2 class="font-display font-black text-4xl sm:text-5xl mb-4" style="color:var(--text)">Scegli la tua Offerta</h2>
+            <p class="text-xl max-w-2xl mx-auto mb-8" style="color:var(--text-muted)">Filtra per fascia d'età e trova il pacchetto perfetto per te.</p>
+
+            <!-- Filters + Search -->
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
+                <button class="filter-btn active" data-filter="tutti"              onclick="filterEvents('tutti')">Tutti</button>
+                <button class="filter-btn"        data-filter="giovani"            onclick="filterEvents('giovani')"><i class="fas fa-bolt mr-1"></i>Giovani</button>
+                <button class="filter-btn"        data-filter="senior"             onclick="filterEvents('senior')"><i class="fas fa-leaf mr-1"></i>Over 60</button>
+                <button class="filter-btn"        data-filter="intergenerazionale" onclick="filterEvents('intergenerazionale')"><i class="fas fa-heart mr-1"></i>Intergenerazionale</button>
+            </div>
+            <div class="search-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="search-events" class="search-input" placeholder="Cerca un evento…">
+            </div>
+        </div>
+
+        <!-- Events grid -->
+        <div id="events-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+        <!-- No results -->
+        <p id="no-results" class="hidden text-center py-16" style="color:var(--text-muted)">Nessun evento trovato per questa ricerca.</p>
+    </div>
+</section>
+
+<!-- ████████████████████████████████████████████████
+     MAPPA
+     ████████████████████████████████████████████████ -->
+<section id="mappa" class="py-24" style="background:var(--silk)">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-12 reveal">
+            <span class="chip mb-4" style="background:rgba(255,107,53,.1);color:#FF6B35;">Rete Nazionale</span>
+            <h2 class="font-display font-black text-4xl sm:text-5xl mb-4" style="color:var(--text)">Trovaci in tutta Italia</h2>
+            <p class="text-xl max-w-2xl mx-auto" style="color:var(--text-muted)">12 centri partner. Seleziona la sede sulla mappa e prenota direttamente.</p>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap justify-center gap-4 mb-6 z-map-legend">
+            <div class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style="background:var(--bg);color:var(--text)">
+                <div class="w-3 h-3 rounded-full" style="background:#1F6B52"></div>Sede Principale ANIF
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style="background:var(--bg);color:var(--text)">
+                <div class="w-3 h-3 rounded-full" style="background:#FF6B35"></div>Centro Partner
+            </div>
+        </div>
+
+        <div id="map" class="w-full rounded-3xl overflow-hidden shadow-2xl reveal" style="height:480px;"></div>
+
+        <!-- Selected gym bar -->
+        <div id="selected-gym-bar" class="hidden mt-4 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4" style="background:var(--bg);border:1px solid var(--border)">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider mb-1" style="color:var(--text-muted)">Sede selezionata</p>
+                <p id="sgym-name"    class="font-display font-black text-lg" style="color:var(--text)"></p>
+                <p id="sgym-address" class="text-sm" style="color:var(--text-muted)"></p>
+            </div>
+            <button onclick="openModal()" class="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:opacity-90" style="background:#FF6B35">
+                <i class="fas fa-ticket-alt"></i>Prenota in questa sede
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ████████████████████████████████████████████████
+     GAMIFICATION
+     ████████████████████████████████████████████████ -->
+<section id="gamification" class="py-24 relative overflow-hidden" style="background:#0f1117">
+    <!-- Background blobs -->
+    <div style="position:absolute;top:-100px;right:-100px;width:500px;height:500px;border-radius:50%;background:#FF6B35;opacity:.04;filter:blur(80px);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-80px;left:-80px;width:400px;height:400px;border-radius:50%;background:#1F6B52;opacity:.06;filter:blur(70px);pointer-events:none;"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+
+        <!-- Header -->
+        <div class="text-center mb-16 reveal">
+            <span class="chip mb-4" style="background:rgba(255,107,53,.15);color:#FF6B35;">Gamification</span>
+            <h2 class="font-display font-black text-4xl sm:text-5xl text-white mb-4">Sfide & Badge</h2>
+            <p class="text-xl max-w-2xl mx-auto" style="color:#9CA3AF">Completa le sfide per guadagnare XP, sbloccare badge esclusivi e vincere premi reali.</p>
+        </div>
+
+        <!-- XP Progress bar -->
+        <div class="max-w-2xl mx-auto mb-12 reveal rounded-2xl p-6" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">
+            <div class="flex items-center justify-between mb-3">
+                <span id="xp-level" class="level-badge">Livello 1 · Principiante</span>
+                <span id="xp-total" class="text-white font-bold text-sm">0 XP</span>
+            </div>
+            <div class="xp-bar-wrap">
+                <div id="xp-bar-fill" class="xp-bar-fill" style="width:0%"></div>
+            </div>
+            <p id="xp-next" class="text-xs mt-2" style="color:#9CA3AF">200 XP al livello 2</p>
+        </div>
+
+        <!-- Challenges grid -->
+        <div id="challenges-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"></div>
+
+        <!-- Badges -->
+        <div class="reveal">
+            <h3 class="font-display font-black text-2xl text-white text-center mb-8">I Tuoi Badge</h3>
+            <div id="badges-grid" class="grid grid-cols-4 sm:grid-cols-8 gap-3"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ████████████████████████████████████████████████
+     FOOTER
+     ████████████████████████████████████████████████ -->
+<footer class="py-16" style="background:#0a0c12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="grid md:grid-cols-3 gap-10 mb-10">
+
+            <!-- Brand -->
+            <div>
+                <div class="flex items-center gap-2.5 mb-4">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-lg" style="background:#FF6B35">M</div>
+                    <span class="font-display font-black text-xl text-white">Move Together</span>
+                </div>
+                <p class="text-sm mb-4" style="color:#6B7280">Progetto intergenerazionale ANIF Eurowellness per RiminiWellness 2025.</p>
+                <div class="flex gap-3">
+                    <a href="#" class="footer-social"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="footer-social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="footer-social"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" class="footer-social"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <!-- Pacchetti -->
+            <div>
+                <h4 class="font-bold text-white mb-4">Pacchetti</h4>
+                <ul class="space-y-2">
+                    <li><a href="#eventi" class="text-sm hover:text-white transition-colors" style="color:#6B7280">Senior &amp; Junior Gym Buddies</a></li>
+                    <li><a href="#eventi" class="text-sm hover:text-white transition-colors" style="color:#6B7280">Open Day Move Together</a></li>
+                    <li><a href="#eventi" class="text-sm hover:text-white transition-colors" style="color:#6B7280">Workshop Longevità</a></li>
+                    <li><a href="#eventi" class="text-sm hover:text-white transition-colors" style="color:#6B7280">Summer Buddy Challenge</a></li>
+                </ul>
+            </div>
+
+            <!-- CTA -->
+            <div>
+                <h4 class="font-bold text-white mb-4">Partecipa ora</h4>
+                <p class="text-sm mb-5" style="color:#6B7280">Registrati gratuitamente e ricevi il tuo coupon digitale istantaneamente.</p>
+                <button onclick="openModal()" class="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold" style="background:#FF6B35">
+                    <i class="fas fa-ticket-alt"></i>Scarica il Coupon
+                </button>
+            </div>
+        </div>
+
+        <div class="border-t pt-6 flex flex-col sm:flex-row items-center justify-between gap-3" style="border-color:rgba(255,255,255,.08)">
+            <p class="text-xs" style="color:#4B5563">© 2025 ANIF Eurowellness · Move Together · RiminiWellness 2025</p>
+            <p class="text-xs" style="color:#4B5563">
+                Versione GitHub Pages · Coupon generati in locale
+            </p>
+        </div>
+    </div>
+</footer>
+
+<!-- ████████████████████████████████████████████████
+     MODAL
+     ████████████████████████████████████████████████ -->
+<div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,.55);backdrop-filter:blur(6px);">
+    <div id="modal-box" class="w-full max-w-lg rounded-3xl shadow-2xl" style="background:var(--bg)"></div>
+</div>
+
+<!-- ████████████████████████████████████████████████
+     TOAST
+     ████████████████████████████████████████████████ -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm rounded-2xl shadow-2xl overflow-hidden" style="background:var(--bg);border:1px solid var(--border)">
+    <div class="flex items-start gap-3 p-4">
+        <div id="toast-icon" class="w-8 h-8 rounded-lg flex items-center justify-content flex-shrink-0 flex items-center justify-center text-sm"></div>
+        <div class="flex-1 min-w-0">
+            <p id="toast-title" class="font-bold text-sm" style="color:var(--text)"></p>
+            <p id="toast-msg"   class="text-xs mt-0.5" style="color:var(--text-muted)"></p>
+        </div>
+    </div>
+</div>
+
+<!-- App JS -->
+<script src="app.js"></script>
+
+</body>
+</html>
